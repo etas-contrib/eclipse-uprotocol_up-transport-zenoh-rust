@@ -36,6 +36,8 @@ anyhow = "1.0.104"
 async-trait = "0.1.91"
 bytes = "1.12.1"
 protobuf = { version = "3.7.2" }
+# addresses https://rustsec.org/advisories/RUSTSEC-2026-0185.html
+quinn-proto = { version = "0.11.15" }
 tokio = { version = "1.53.1", default-features = false }
 tracing = "0.1.44"
 up-rust = { version = "0.9", default-features = false }
@@ -45,6 +47,7 @@ zenoh = { version = "1.9.0" }
 [dev-dependencies]
 chrono = "0.4.45"
 clap = { version = "4.6.6", features = ["derive"] }
+quinn-proto = { version = "0.11.15" }
 serde_json = "1.0.151"
 serial_test = { version = "3.5.0" }
 test-case = { version = "3.3" }
