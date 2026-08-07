@@ -102,13 +102,16 @@ jobs:
           name: tracing-report-html
           path: dist/tracing/
       - name: Upload requirements tracing report to release
-        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
         id: upload_requirements_tracing_report
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/tracing/*
-          file_glob: true
-          tag: ${{ github.ref }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          archive="tracing-report-html.tar.gz"
+          tar -czf "$archive" -C dist tracing
+          gh release upload "$TAG" "$archive" --clobber
+          echo "browser_download_url=${{ github.server_url }}/${{ github.repository }}/releases/download/$TAG/$archive" >> "$GITHUB_OUTPUT"
 
       # Test report - we later need the download_url output of the upload step
       - name: Download test report
@@ -117,13 +120,16 @@ jobs:
           name: test-results
           path: dist/tests/
       - name: Upload test report to release
-        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
         id: upload_test_report
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/tests/*
-          file_glob: true
-          tag: ${{ github.ref }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          archive="test-results.tar.gz"
+          tar -czf "$archive" -C dist tests
+          gh release upload "$TAG" "$archive" --clobber
+          echo "browser_download_url=${{ github.server_url }}/${{ github.repository }}/releases/download/$TAG/$archive" >> "$GITHUB_OUTPUT"
 
       # Test coverage - we later need the download_url output of the upload step
       - name: Download test coverage
@@ -132,34 +138,41 @@ jobs:
           name: code-coverage-html
           path: dist/codecov/
       - name: Upload test coverage to release
-        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
         id: upload_test_coverage
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/codecov/*
-          file_glob: true
-          tag: ${{ github.ref }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          archive="code-coverage-html.tar.gz"
+          tar -czf "$archive" -C dist codecov
+          gh release upload "$TAG" "$archive" --clobber
+          echo "browser_download_url=${{ github.server_url }}/${{ github.repository }}/releases/download/$TAG/$archive" >> "$GITHUB_OUTPUT"
 
       # README - we later need the download_url output of the upload step
       - name: Upload README to release
-        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
         id: upload_readme
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: README.md
-          tag: ${{ github.ref }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release upload "$TAG" README.md --clobber
+          echo "browser_download_url=${{ github.server_url }}/${{ github.repository }}/releases/download/$TAG/README.md" >> "$GITHUB_OUTPUT"
 
       - name: Gather uProtocol Specification documents
         shell: bash
         run: |
           tar cvz --file up-spec.tar.gz ${{ env.UP_SPEC_FILE_PATTERNS }}
       - name: Upload relevant uProtocol Spec files to release
-        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
         id: upload_up_spec
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: up-spec.tar.gz
-          tag: ${{ github.ref }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release upload "$TAG" up-spec.tar.gz --clobber
+          echo "browser_download_url=${{ github.server_url }}/${{ github.repository }}/releases/download/$TAG/up-spec.tar.gz" >> "$GITHUB_OUTPUT"
   
       - name: Gets latest created release info
         id: latest_release_info
@@ -170,19 +183,21 @@ jobs:
       - name: Collect quality artifacts
         uses: eclipse-dash/quevee@b62d7faa1cf68654758754aaed8616b19f227583 # v1.0.0
         id: quevee_manifest
-        with:          
+        with:
           release_url: ${{ steps.latest_release_info.outputs.html_url }}
           artifacts_readme: ${{ steps.upload_readme.outputs.browser_download_url }}
           artifacts_requirements: ${{ steps.upload_up_spec.outputs.browser_download_url }}
           artifacts_testing: ${{ steps.upload_test_report.outputs.browser_download_url }},${{ steps.upload_test_coverage.outputs.browser_download_url }},${{ steps.upload_requirements_tracing_report.outputs.browser_download_url }}
 
       - name: Upload manifest to release
-        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
         id: upload_quality_manifest
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.quevee_manifest.outputs.manifest_file }}
-          tag: ${{ github.ref }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          MANIFEST_FILE: ${{ steps.quevee_manifest.outputs.manifest_file }}
+        run: |
+          gh release upload "$TAG" "${MANIFEST_FILE}" --clobber
 
   cargo-publish:
     name: publish to crates.io

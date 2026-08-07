@@ -3,4 +3,6 @@ skip:
   purl:
   - pkg:githubactions/actions-rust-lang/setup-rust-toolchain
   - pkg:githubactions/eclipse-uprotocol/ci-cd
+  - pkg:githubactions/xom9ikk/dotenv
+
 
