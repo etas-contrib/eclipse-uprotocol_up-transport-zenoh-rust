@@ -25,18 +25,32 @@ on:
       - "Cargo.*"
       - ".github/**"
   workflow_call:
+    inputs:
+      RUST_TOOLCHAIN:
+        type: string
+        description: 'The Rust toolchain to use for the workflow'
+        required: false
+        default: 'stable'
     outputs:
       test_results_url:
         description: "URL of the test results artifact"
         value: ${{ jobs.test.outputs.test_results_url }}
   workflow_dispatch:
+    inputs:
+      RUST_TOOLCHAIN:
+        description: 'The Rust toolchain to use for the workflow'
+        required: false
+        default: 'stable'
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
-  RUST_TOOLCHAIN: ${{ vars.RUST_TOOLCHAIN || 'stable' }}
+  RUST_TOOLCHAIN: ${{ github.event.inputs.RUST_TOOLCHAIN || 'stable' }}
   RUSTFLAGS: -Dwarnings
   CARGO_TERM_COLOR: always
 
@@ -44,12 +58,15 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         submodules: "recursive"
-    - uses: dtolnay/rust-toolchain@master
+        persist-credentials: false
+
+    - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
       with: 
         toolchain: ${{ env.RUST_TOOLCHAIN }}
+
     - name: Run cargo check
       run: |
         cargo check --workspace --all-targets --all-features
@@ -57,13 +74,16 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: "recursive"
-      - uses: dtolnay/rust-toolchain@master
+          persist-credentials: false
+
+      - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
         with: 
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           components: rustfmt
+
       - name: Run cargo fmt
         run: |
           cargo fmt --all --check
@@ -71,13 +91,16 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: "recursive"
-      - uses: dtolnay/rust-toolchain@master
+          persist-credentials: false
+
+      - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
         with: 
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           components: clippy
+
       - name: cargo clippy
         run: |
           cargo clippy --version
@@ -88,12 +111,15 @@ jobs:
     env:
       RUSTDOCFLAGS: -Dwarnings
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: "recursive"
-      - uses: dtolnay/rust-toolchain@master
+          persist-credentials: false
+
+      - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
         with: 
           toolchain: ${{ env.RUST_TOOLCHAIN }}
+
       - name: Create Documentation
         run: |
           cargo doc --no-deps --all-features
@@ -104,11 +130,13 @@ jobs:
     # https://github.com/lycheeverse/lychee/issues/291
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: "recursive"
+          persist-credentials: false
+
       - name: Restore lychee cache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .lycheecache
           key: cache-lychee-${{ github.sha }}
@@ -128,16 +156,20 @@ jobs:
       matrix:
         feature-flags: ["", "--no-default-features", "--all-features"]
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: "recursive"
-      - uses: dtolnay/rust-toolchain@master
+          persist-credentials: false
+
+      - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
         with: 
           toolchain: ${{ env.RUST_TOOLCHAIN }}
+
       - name: Run lib tests
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/target
           RUSTC_BOOTSTRAP=1 cargo test --no-fail-fast --all-targets ${{ matrix.feature-flags }} -- -Z unstable-options --format junit --report-time > ${GITHUB_WORKSPACE}/target/lib-test-results.xml
+
       - name: Run doc tests
         run: |
           RUSTC_BOOTSTRAP=1 cargo test --no-fail-fast --doc ${{ matrix.feature-flags }} -- -Z unstable-options --format junit --report-time > ${GITHUB_WORKSPACE}/target/doc-test-results.xml
@@ -145,7 +177,7 @@ jobs:
       - name: Upload all-features test results artifact
         id: test_results
         if: matrix.feature-flags == '--all-features'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-results
           # include all test result files

@@ -18,14 +18,28 @@ on:
     paths:
     - "Cargo.*"
   workflow_call:
+    inputs:
+      RUST_TOOLCHAIN:
+        type: string
+        description: 'The Rust toolchain to use for the workflow'
+        required: false
+        default: 'stable'
   workflow_dispatch:
+    inputs:
+      RUST_TOOLCHAIN:
+        description: 'The Rust toolchain to use for the workflow'
+        required: false
+        default: 'stable'
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
-  RUST_TOOLCHAIN: ${{ vars.RUST_TOOLCHAIN || 'stable' }}
+  RUST_TOOLCHAIN: ${{ github.event.inputs.RUST_TOOLCHAIN || 'stable' }}
   RUSTFLAGS: -Dwarnings
   CARGO_TERM_COLOR: always
 
@@ -34,17 +48,20 @@ jobs:
     name: "Check 3rd party licenses"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+        persist-credentials: false
+
     - name: Determine 3rd party dependencies
       working-directory: ${{github.workspace}}
       run: |
         cargo tree --all-features --locked -e no-build,no-dev --prefix none --no-dedupe \
+          | sed -n '2~1p' \
           | sort -u \
           | grep -v '^[[:space:]]*$' \
-          | grep -v up-transport-zenoh-rust \
           | sed -E 's|([^ ]+) v([^ ]+).*|crate/cratesio/-/\1/\2|' \
           > DEPS.txt
     - name: Run Eclipse Dash Licenses tool
-      uses: eclipse-uprotocol/ci-cd/.github/actions/run-eclipse-dash@main
+      uses: eclipse-uprotocol/ci-cd/.github/actions/run-eclipse-dash@ad3f99eac0675c714f08c473412dae14d9fecaa8
       with:
         components-file: DEPS.txt
