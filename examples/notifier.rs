@@ -49,8 +49,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let data = format!("notification {cnt}");
         println!(
             "Sending notification [from: {}, to: {}, payload: {data}]",
-            &source_uuri.to_uri(false),
-            &sink_uuri.to_uri(false)
+            source_uuri.to_uri(false),
+            sink_uuri.to_uri(false)
         );
         let umessage = UMessageBuilder::notification(source_uuri.clone(), sink_uuri.clone())
             .build_with_payload(data, UPayloadFormat::UPAYLOAD_FORMAT_TEXT)?;

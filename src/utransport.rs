@@ -242,7 +242,7 @@ mod tests {
         assert!(attachment.len() >= 2);
         let attachment_bytes = attachment.to_bytes();
         let ver = attachment_bytes[0];
-        assert!(ver == crate::UPROTOCOL_MAJOR_VERSION);
+        assert_eq!(ver, crate::UPROTOCOL_MAJOR_VERSION);
         assert!(UAttributes::parse_from_bytes(&attachment_bytes[1..])
             .is_ok_and(|deserialized_attributes| &deserialized_attributes == attributes));
     }
