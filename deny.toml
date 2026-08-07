@@ -35,29 +35,19 @@ allow = [
 private = { ignore = true }
 unused-allowed-license = "allow"
 
-[[licenses.clarify]]
-crate = "ring@0.17.13"
-expression = "MIT AND ISC AND OpenSSL"
-license-files = [{ path = "LICENSE", hash = 0x70ac5d83 }]
-
 [bans]
 multiple-versions = "deny"
 wildcards = "deny"
 skip = [
-    { crate = "base64@0.21.7", reason = "an outdated version that is still used by some crates we depend on" },
-    { crate = "rustls-webpki@0.102.8", reason = "an outdated version that is still used by zenoh" },
 ]
 skip-tree = [
-    { crate = "hashbrown@0.14.5", reason = "an outdated version that is still used by some crates we depend on" },
-    { crate = "rand@0.9.1", reason = "a newer version that is used by zenoh-link-quic" },
-    { crate = "regex-automata@0.1.10", reason = "an outdated version that is still used by some other crates we depend on" },
-    { crate = "rustix@0.38.44", reason = "an outdated version that is still used by the (soon to be renamed) protobuf crate" },
-    { crate = "thiserror@1.0.69", reason = "an outdated version that is still used by some other crates we depend on" },
-    { crate = "windows-sys", reason = "a foundational crate for many that bumps far too frequently to ever have a shared version" },
+    { crate = "zenoh@1.9.0", reason = "zenoh notoriously uses multiple different versions of crates" },
+    { crate = "protobuf-codegen@3.7.2", reason = "only used as part of the build process" },
 ]
 
 [advisories]
 ignore = [
     { id = "RUSTSEC-2023-0071", reason = "there currently is no version of the rsa crate available that fixes this vulnerability" },
     { id = "RUSTSEC-2024-0436", reason = "there is no better alternative of the crate, and the codebase has been stable for a long time" },
+    { id = "RUSTSEC-2025-0134", reason = "zenoh needs to remove its dependency on this crate; based on the RUSTSEC description, there should be no imminent risk involved in the short term" },
 ]
