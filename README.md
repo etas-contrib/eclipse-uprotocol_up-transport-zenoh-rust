@@ -1,6 +1,6 @@
 # Rust based Eclipse Zenoh&trade; Transport Library for Eclipse uProtocol&trade;
 
-This crate implements the Zenoh transport as specified in [uProtocol v1.6.0-alpha.7](https://github.com/eclipse-uprotocol/up-spec/tree/v1.6.0-alpha.7).
+This crate implements the Zenoh transport as specified in [uProtocol v1.6.0-alpha.7](https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.7/up-l1/zenoh.adoc).
 
 ## Getting started
 
@@ -58,7 +58,17 @@ Please refer to the [publisher](examples/publisher.rs) and [subscriber](examples
 ### Supported Service Classes
 `uman~supported-service-classes~1`
 
-The Zenoh transport supports all service classes defined by uProtocol and maps them to corresponding Zenoh message priority levels.
+The Zenoh transport supports all service classes defined by uProtocol and maps them to corresponding Zenoh message priority levels:
+
+| uProtocol Service Class | Zenoh Priority Level |
+| :---------------------- | :------------------- |
+| `CS0`                   | `Background`         |
+| `CS1`                   | `DataLow`            |
+| `CS2`                   | `Data`               |
+| `CS3`                   | `DataHigh`           |
+| `CS4`                   | `InteractiveLow`     |
+| `CS5`                   | `InteractiveHigh`    |
+| `CS6`                   | `RealTime`           |
 
 Covers:
 - `req~utransport-send-qos-mapping~1`
@@ -75,9 +85,9 @@ Covers:
 ### Authentication & Authorization
 `uman~auth-configuration~1`
 
-The transport provided by this crate can be configured with credentials that the transport will provide to the Zenoh router during connection establishment. A [_username_ and _password_](https://zenoh.io/docs/manual/user-password/) can be specified in the Zenoh config file that is passed into the `UPTransportZenohBuilder::with_config_file` function.
+The transport provided by this crate can be configured with credentials that the transport will provide to the Zenoh router during connection establishment. A [_username_ and _password_](https://zenoh.io/docs/manual/user-password/) can be specified in the Zenoh configuration that is passed into the `UPTransportZenohBuilder::with_config` or `UPTransportZenohBuilder::with_config_path` functions.
 
-Access to resources can be configured in the Zenoh (peer's or router's) config file by means of [Access Control Lists](https://zenoh.io/docs/manual/access-control/).
+Access to resources can be configured in the Zenoh (peer's or router's) configuration by means of [Access Control Lists](https://zenoh.io/docs/manual/access-control/).
 The [authorization integration tests](./tests/authorization.rs) illustrate, how ACLs can be used to restrict a client's authority to put and subscribe to messages using corresponding rule sets.
 
 Covers:

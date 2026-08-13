@@ -6,7 +6,7 @@ Project home: <https://projects.eclipse.org/projects/automotive.uprotocol>
 
 ## Trademarks
 
-Eclipse uProtocol is trademark of the Eclipse Foundation. Eclipse, and the Eclipse Logo are registered trademarks of the Eclipse Foundation.
+Eclipse, the Eclipse Logo and Eclipse uProtocol are registered trademarks of the Eclipse Foundation.
 
 ## Copyright
 

@@ -82,7 +82,8 @@ jobs:
       - check-msrv
       - coverage
       - current-spec-compliance
-    permissions: write-all
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -162,8 +163,10 @@ jobs:
 
       - name: Gather uProtocol Specification documents
         shell: bash
+        env:
+            UP_SPEC_FILE_PATTERNS: ${{ env.UP_SPEC_FILE_PATTERNS }}
         run: |
-          tar cvz --file up-spec.tar.gz ${{ env.UP_SPEC_FILE_PATTERNS }}
+          tar cvz --file up-spec.tar.gz $UP_SPEC_FILE_PATTERNS
       - name: Upload relevant uProtocol Spec files to release
         id: upload_up_spec
         shell: bash
